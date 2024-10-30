@@ -42,7 +42,7 @@ int main()
             }
 
             // Set exposure time
-            int exposureTime = 10000;  // 10000 microseconds (10 milliseconds)
+            int exposureTime = 1000000000;  // 10000 microseconds (10 milliseconds)
             int exposureResult = CCDUSB_SetExposureTime(1, exposureTime, 0);
             if (exposureResult != 1) {
                 cerr << "Failed to set exposure time." << endl;
@@ -66,29 +66,33 @@ int main()
 
             cout << "Continuous frame grabbing started. Press any key to stop..." << endl;
 
-            // Frame fetching and processing loop
+            // Assuming the SDK is properly initialized and the camera is started
+            
+            int deviceID = 1;  // Example device ID
             unsigned short* framePtr = nullptr;
-            framePtr = CCDUSB_GetCurrentFrame(1, framePtr);
-            while (!_kbhit()) { // Loop until keyboard hit
-                if (framePtr != NULL) {
-                    unsigned short* metaData = framePtr;
-                    cout << "New Frame Captured:" << endl;
-                    for (int i = 0; i < 8; ++i) { // Assuming 8 words of metadata
+
+            while (!_kbhit()) {  // Loop until keyboard hit
+                // Ensure that you get the current frame properly
+                if (CCDUSB_GetCurrentFrame(deviceID, framePtr) != NULL) {
+                    // Assuming the first 8 words are metadata, though they're not used in this output
+                    unsigned short* metaData = framePtr; // Accessing metadata if needed for debugging
+                    for (int i = 0; i < 8; ++i) {
                         cout << "MetaData[" << i << "]: " << metaData[i] << endl;
                     }
 
+                    // Calculate where the raw data starts
                     unsigned short* rawData = framePtr + 8; // Skip metadata
-                    int rawDataLength = 3648; // for TCX-1304-X
-                    unsigned long pixelSum = 0;
+                    int rawDataLength = 3648;  // Number of words in the raw data for TCX-1304-X
+
+                    // Output x and y values for each pixel
                     for (int i = 0; i < rawDataLength; ++i) {
-                        pixelSum += rawData[i];
+                        cout << "X: " << i << ", Y: " << rawData[i] << endl;
                     }
-                    cout << "Average pixel value: " << (pixelSum / rawDataLength) << endl;
                 }
                 else {
-                    cerr << "Failed to capture frame." << endl;
+                    cerr << "Failed to get the current frame." << endl;
                 }
-                Sleep(100); // Sleep to slow down the output rate
+               // Sleep(100);  // Sleep to reduce CPU usage and potentially align with frame updates
             }
 
             CCDUSB_StopFrameGrab();
