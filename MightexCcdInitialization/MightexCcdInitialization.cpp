@@ -41,16 +41,8 @@ int main()
                 cerr << "Failed to get module and serial number for Device 1." << endl;
             }
 
-            // Set exposure time
-            int exposureTime = 1000000000;  // 10000 microseconds (10 milliseconds)
-            int exposureResult = CCDUSB_SetExposureTime(1, exposureTime, 0);
-            if (exposureResult != 1) {
-                cerr << "Failed to set exposure time." << endl;
-            }
-            else {
-                cout << "Exposure time set to " << exposureTime << " microseconds successfully." << endl;
-            }
-
+         
+            
             // Assuming 0x8888 is the value for continuous operation
             if (CCDUSB_StartCameraEngine(0) == 1) {
                 if (CCDUSB_StartFrameGrab(0x8888) != 1) {
@@ -62,6 +54,15 @@ int main()
             }
             else {
                 cerr << "Failed to start camera engine." << endl;
+            }
+            // Set exposure time
+            int exposureTime = 500;  // 10000 microseconds (10 milliseconds)
+            int exposureResult = CCDUSB_SetExposureTime(1, exposureTime, 0);
+            if (exposureResult != 1) {
+                cerr << "Failed to set exposure time." << exposureResult << endl;
+            }
+            else {
+                cout << "Exposure time set to " << exposureTime << " microseconds successfully." << endl;
             }
 
             cout << "Continuous frame grabbing started. Press any key to stop..." << endl;
@@ -92,21 +93,16 @@ int main()
                 else {
                     cerr << "Failed to get the current frame." << endl;
                 }
-               // Sleep(100);  // Sleep to reduce CPU usage and potentially align with frame updates
+                Sleep(100);  // Sleep to reduce CPU usage and potentially align with frame updates
             }
 
             CCDUSB_StopFrameGrab();
+            CCDUSB_StopCameraEngine();
             CCDUSB_UnInitDevice();
 
 
         }
     }
-
-    // Uninitialize the device if any were initialized
-    if (numDevices > 0) {
-        CCDUSB_UnInitDevice();
-    }
-
     
 }
 
